@@ -1,4 +1,4 @@
-package none.piedpiper;
+package com.github.middle-out;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
