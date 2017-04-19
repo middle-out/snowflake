@@ -1,4 +1,4 @@
-package com.github.middle-out;
+package com.github.middleout;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
