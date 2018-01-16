@@ -11,15 +11,15 @@ import static org.junit.Assert.*;
 /**
  * Created by assaf on 04/01/2015.
  */
-public class LUIdTest {
+public class SnowflakeLUIdTest {
     @Test(expected=IllegalArgumentException.class)
     public void testConstructor1() throws Exception {
-        new LUId(-1);
+        new SnowflakeLUId(-1);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void testConstructor2() throws Exception {
-        new LUId(4096);
+        new SnowflakeLUId(4096);
     }
 
     @Test
@@ -27,7 +27,7 @@ public class LUIdTest {
         long millis = DateTime.now().getMillis();
         DateTimeUtils.setCurrentMillisFixed(millis);
 
-        LUId luid = new LUId(0);
+        SnowflakeLUId luid = new SnowflakeLUId(0);
 
         verifyValue(millis, 0, luid);
         verifyValue(millis, 1, luid);
@@ -37,7 +37,7 @@ public class LUIdTest {
         verifyValue(millis, 0, luid);
     }
 
-    private void verifyValue(long ts, long currentSequence, LUId luid) {
+    private void verifyValue(long ts, long currentSequence, SnowflakeLUId luid) {
         DateTimeUtils.setCurrentMillisFixed(ts);
         long res = luid.nextLUId();
         long expected = ((ts-1288834974657L) << 22) + currentSequence;
@@ -45,36 +45,28 @@ public class LUIdTest {
         assertEquals(expected, res);
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void illegalClockReading() throws Exception {
         long millis = DateTime.now().getMillis();
         DateTimeUtils.setCurrentMillisFixed(millis);
 
-        LUId luid = new LUId(15);
+        SnowflakeLUId luid = new SnowflakeLUId(15);
 
         long garbage = luid.nextLUId();
 
         DateTimeUtils.setCurrentMillisFixed(millis-1);
 
-        boolean exceptionOccurred = false;
-        try {
-            garbage = luid.nextLUId();
-        }
-        catch (IllegalStateException e) {
-            exceptionOccurred = true;
-        }
-
-        assertTrue(exceptionOccurred);
+        garbage = luid.nextLUId();
     }
 
     @Test
     public void testStaticTimeFilters() throws Exception {
         long millis = DateTime.now().getMillis();
 
-        long res = LUId.getTimeFilter(millis);
+        long res = SnowflakeLUId.getTimeFilter(millis);
         assertEquals(((millis-1288834974657L) << 22), res);
 
-        long res2 = LUId.getTimeFilter(new Date(millis));
+        long res2 = SnowflakeLUId.getTimeFilter(new Date(millis));
 
         assertEquals(res, res2);
     }

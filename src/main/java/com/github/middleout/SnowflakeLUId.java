@@ -15,7 +15,7 @@ import java.util.Date;
  * worker bits 10
  * sequence bits 12
  */
-public class LUId {
+public class SnowflakeLUId {
     private static final long TWITTER_EPOCH = 1288834974657L; // found out about this later, since this is based on twitter's post I've added this too ;)
 
     private static final int WORKER_BITS = 10;
@@ -28,18 +28,21 @@ public class LUId {
     private volatile long sequence = 0;
     private long workerId = 1;
 
-    public LUId(int workerId) {
+    public SnowflakeLUId(int workerId) {
         if (workerId < 0 || MAX_WORKER_ID < workerId) {
             throw new IllegalArgumentException(String.format("worker id [%d] is out of range", workerId));
         }
         this.workerId = workerId;
     }
 
-    public synchronized long nextLUId() {
+    public long nextLUId() {
         long currentTimestamp = getCurrentTimestamp();
+        return generateNextId(currentTimestamp);
+    }
 
-        // this may happen with stressed virtual machines where the clocked is synced backwards with the host
-        if (currentTimestamp < lastTimestamp) {
+    private synchronized long generateNextId(long currentTimestamp) {
+        // this may happen with stressed virtual machines where the clock is not in sync
+        if (currentTimestamp < lastTimestamp/* && sequence == MAX_SEQUENCE_NUMBER*/) {
             throw new IllegalStateException("current system clock is behind previous measurement");
         }
 
